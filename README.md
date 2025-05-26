@@ -19,7 +19,7 @@ A beautifully designed and feature-rich music player built with Python and Tkint
 
 ## 🖼️ Preview
 
-> ![Screenshot](https://via.placeholder.com/800x500.png?text=Izuku+Audio+Player+Preview)
+> ![Screenshot]([https://via.placeholder.com/800x500.png?text=Izuku+Audio+Player+Preview](https://i.imgur.com/MGmx6ge.png))
 
 ---
 
