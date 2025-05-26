@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Izuku Audio Player - 2025 Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .player-container {
+            width: 800px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .player-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0.05) 50%, 
+                rgba(255, 255, 255, 0.1) 100%);
+            pointer-events: none;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .settings-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: rotate(90deg);
+        }
+
+        .search-section {
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 16px 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .search-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+        }
+
+        .search-btn {
+            padding: 16px 32px;
+            border-radius: 16px;
+            border: none;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(255, 107, 107, 0.3);
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(255, 107, 107, 0.4);
+        }
+
+        .controls-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 48px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .control-btn {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.1);
+        }
+
+        .play-btn {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            box-shadow: 0 12px 32px rgba(78, 205, 196, 0.3);
+        }
+
+        .play-btn:hover {
+            box-shadow: 0 16px 40px rgba(78, 205, 196, 0.4);
+        }
+
+        .status-section {
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .status-text {
+            color: white;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .time-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            margin: 16px 0;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: -3px;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .volume-control {
+            position: absolute;
+            right: 32px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            z-index: 10;
+        }
+
+        .volume-icon {
+            color: white;
+            font-size: 18px;
+            opacity: 0.8;
+        }
+
+        .volume-slider {
+            width: 4px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .volume-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(0deg, #ff6b6b, #4ecdc4);
+            border-radius: 2px;
+            height: 70%;
+            transition: height 0.3s ease;
+        }
+
+        .floating-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 8s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .visualizer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            display: flex;
+            align-items: end;
+            justify-content: center;
+            gap: 3px;
+            opacity: 0.3;
+        }
+
+        .bar {
+            width: 4px;
+            background: linear-gradient(0deg, #ff6b6b, #4ecdc4);
+            border-radius: 2px 2px 0 0;
+            animation: wave 1.5s ease-in-out infinite;
+        }
+
+        .bar:nth-child(even) {
+            animation-delay: 0.1s;
+        }
+
+        .bar:nth-child(3n) {
+            animation-delay: 0.2s;
+        }
+
+        @keyframes wave {
+            0%, 100% { height: 4px; }
+            50% { height: 30px; }
+        }
+
+        .settings-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 300px;
+        }
+
+        .modal-title {
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .modal-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="player-container">
+        <div class="header">
+            <div class="logo">🎵 Izuku Audio Player</div>
+            <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+        </div>
+
+        <div class="search-section">
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Enter YouTube URL or search term..." id="searchInput">
+                <button class="search-btn" onclick="searchAndPlay()">Search & Play</button>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <button class="control-btn" onclick="previousSong()">⏮️</button>
+            <button class="control-btn play-btn" onclick="togglePlayPause()" id="playBtn">▶️</button>
+            <button class="control-btn" onclick="nextSong()">⏭️</button>
+        </div>
+
+        <div class="progress-bar" onclick="seekTo(event)">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="status-section">
+            <div class="status-text" id="statusText">Ready to play music</div>
+            <div class="time-text" id="timeText">00:00 / 00:00</div>
+        </div>
+
+        <div class="volume-control">
+            <div class="volume-icon">🔊</div>
+            <div class="volume-slider" onclick="setVolume(event)">
+                <div class="volume-fill" id="volumeFill"></div>
+            </div>
+        </div>
+
+        <div class="visualizer" id="visualizer">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+    </div>
+
+    <div class="settings-modal" id="settingsModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="toggleSettings()">×</button>
+            <div class="modal-title">Settings</div>
+            <button class="modal-btn" onclick="changeTheme()">🎨 Change Theme</button>
+            <button class="modal-btn" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+            <button class="modal-btn" onclick="chooseBackground()">🖼️ Choose Background</button>
+            <button class="modal-btn" onclick="resetSettings()">🔄 Reset Settings</button>
+        </div>
+    </div>
+
+    <script>
+        // Audio player state
+        let isPlaying = false;
+        let isPaused = false;
+        let currentTime = 0;
+        let duration = 180; // Demo duration
+        let volume = 0.7;
+        let playlist = [];
+        let currentIndex = 0;
+
+        // Initialize particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 5) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Search and play functionality
+        function searchAndPlay() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) {
+                updateStatus('Please enter a search term or YouTube URL');
+                return;
+            }
+
+            updateStatus('Searching for music...');
+            
+            // Simulate search and load
+            setTimeout(() => {
+                playlist = [query]; // In real implementation, this would be YouTube results
+                currentIndex = 0;
+                updateStatus(`Now playing: ${query}`);
+                startPlayback();
+            }, 1500);
+        }
+
+        function startPlayback() {
+            isPlaying = true;
+            isPaused = false;
+            document.getElementById('playBtn').innerHTML = '⏸️';
+            
+            // Start progress animation
+            animateProgress();
+            
+            // Show visualizer
+            document.getElementById('visualizer').style.opacity = '0.6';
+        }
+
+        function togglePlayPause() {
+            if (isPlaying) {
+                if (isPaused) {
+                    isPaused = false;
+                    document.getElementById('playBtn').innerHTML = '⏸️';
+                    animateProgress();
+                } else {
+                    isPaused = true;
+                    document.getElementById('playBtn').innerHTML = '▶️';
+                }
+            } else {
+                if (playlist.length > 0) {
+                    startPlayback();
+                } else {
+                    updateStatus('Please search for music first');
+                }
+            }
+        }
+
+        function previousSong() {
+            if (playlist.length > 0) {
+                currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+                currentTime = 0;
+                updateStatus(`Previous: ${playlist[currentIndex]}`);
+                if (isPlaying) startPlayback();
+            }
+        }
+
+        function nextSong() {
+            if (playlist.length > 0) {
+                currentIndex = (currentIndex + 1) % playlist.length;
+                currentTime = 0;
+                updateStatus(`Next: ${playlist[currentIndex]}`);
+                if (isPlaying) startPlayback();
+            }
+        }
+
+        function animateProgress() {
+            if (isPlaying && !isPaused) {
+                currentTime += 0.5;
+                if (currentTime >= duration) {
+                    currentTime = 0;
+                    nextSong();
+                    return;
+                }
+                
+                const progress = (current / duration) * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+                
+                updateTimeDisplay();
+                setTimeout(animateProgress, 500);
+            }
+        }
+
+        function seekTo(event) {
+            const progressBar = event.currentTarget;
+            const rect = progressBar.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const progress = clickX / rect.width;
+            
+            currentTime = progress * duration;
+            document.getElementById('progressFill').style.width = (progress * 100) + '%';
+            updateTimeDisplay();
+        }
+
+        function setVolume(event) {
+            const volumeSlider = event.currentTarget;
+            const rect = volumeSlider.getBoundingClientRect();
+            const clickY = event.clientY - rect.top;
+            const volumeLevel = 1 - (clickY / rect.height);
+            
+            volume = Math.max(0, Math.min(1, volumeLevel));
+            document.getElementById('volumeFill').style.height = (volume * 100) + '%';
+        }
+
+        function updateStatus(message) {
+            document.getElementById('statusText').textContent = message;
+        }
+
+        function updateTimeDisplay() {
+            const currentMin = Math.floor(currentTime / 60);
+            const currentSec = Math.floor(currentTime % 60);
+            const totalMin = Math.floor(duration / 60);
+            const totalSec = Math.floor(duration % 60);
+            
+            const timeStr = `${currentMin.toString().padStart(2, '0')}:${currentSec.toString().padStart(2, '0')} / ${totalMin.toString().padStart(2, '0')}:${totalSec.toString().padStart(2, '0')}`;
+            document.getElementById('timeText').textContent = timeStr;
+        }
+
+        function toggleSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function changeTheme() {
+            const themes = [
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+            ];
+            
+            const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+            document.body.style.background = randomTheme;
+            updateStatus('Theme changed!');
+            toggleSettings();
+        }
+
+        function toggleDarkMode() {
+            document.body.style.filter = document.body.style.filter === 'invert(1)' ? 'none' : 'invert(1)';
+            updateStatus('Dark mode toggled!');
+            toggleSettings();
+        }
+
+        function chooseBackground() {
+            updateStatus('Background selection feature coming soon!');
+            toggleSettings();
+        }
+
+        function resetSettings() {
+            document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            document.body.style.filter = 'none';
+            updateStatus('Settings reset to default');
+            toggleSettings();
+        }
+
+        // Initialize the player
+        createParticles();
+        updateTimeDisplay();
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            switch(e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    togglePlayPause();
+                    break;
+                case 'ArrowLeft':
+                    previousSong();
+                    break;
+                case 'ArrowRight':
+                    nextSong();
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>
