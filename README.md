@@ -48,7 +48,7 @@ pip install youtube-dl
 
 1. Clone the repo:
     ```bash
-    git clone https://github.com/your-username/izuku-audio-player.git
+    git clone izuku6-pixel/Izuku-Audio-Player---Modern-Python-Web-Music-Player-with-YouTube-Support
     cd izuku-audio-player
     ```
 
